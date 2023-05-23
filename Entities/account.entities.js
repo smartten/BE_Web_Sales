@@ -11,19 +11,19 @@ const account = new Schema({
         type: String, required: true
     },
     email: {
-        email: {
-            type: String,
-            trim: true,
-            validate: [validateEmail, 'Please fill a valid email address'],
-            match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
-        },
+        type: String,
+        trim: true,
+        validate: [validateEmail, 'Please fill a valid email address'],
+        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address'],
+        unique: true
     },
-    location: {
-        type: String, required: true
+    role : {
+        type : String,
+        required : true
     },
-    hide: {
-        type: Boolean,
-        default: false
+    lookAccount: {
+        type : Boolean,
+        default : false
     },
     createdAt: {
         type: Date,
