@@ -11,6 +11,9 @@ const orderController = require('../controllers/orderController')
 const bannerController = require('../controllers/bannerController')
 const newsController = require('../controllers/newsController')
 const productController = require('../controllers/productController')
+const recruitController = require('../controllers/recruitController')
+const feedbackController = require('../controllers/feedbackController')
+const candidateController = require('../controllers/candidateController')
 
 const router = express.Router()
 
@@ -50,20 +53,6 @@ const { register } = require('../validate/user')
 
 const { isAdmin, required } = require('../middlewares/auth.js')
 
-router.post('/upload-image', upload.single('file'), (req, res) => {
-    const data = req.file
-    console.log('data', data);
-
-    res.json({ msg: 'ok' })
-})
-
-router.post('/multiples-image', upload.array('files'), (req, res) => {
-    const data = req.files
-    console.log('data', data);
-
-    res.json({ msg: 'ok' })
-})
-
 //category
 router.get('/category', categoryController.getAllCategory)
 router.post('/category', categoryController.createCategory)
@@ -96,12 +85,30 @@ router.delete('/news/:id', newsController.deleteNews)
 router.get('/product', productController.getAllProduct)
 router.post('/product',upload.fields([
     { name: 'mainImage', maxCount: 1 },
-    { name: 'subImages', maxCount: 5 }
+    { name: 'subImages', maxCount: 10 }
   ]) , productController.createProduct)
 router.patch('/product',upload.fields([
     { name: 'mainImage', maxCount: 1 },
-    { name: 'subImages', maxCount: 5 }
+    { name: 'subImages', maxCount: 10 }
   ]) , productController.updateProduct)
 router.delete('/product/:id', productController.deleteProduct)
+
+//recruit
+router.get('/recruit', recruitController.getAllRecruit)
+router.post('/recruit', recruitController.createRecruit)
+router.patch('/recruit', recruitController.updateRecruit)
+router.delete('/recruit/:id', recruitController.deleteRecruit)
+
+//feedback
+router.get('/feedback', feedbackController.getAllFeedBack)
+router.post('/feedback', feedbackController.createFeedBack)
+router.patch('/feedback', feedbackController.updateFeedBack)
+router.delete('/feedback/:id', feedbackController.deleteFeedBack)
+
+//candidate
+router.get('/candidate', candidateController.getAllCandidate)
+router.post('/candidate', candidateController.createCandidate)
+router.patch('/candidate', candidateController.updateCandidate)
+router.delete('/candidate/:id', candidateController.deleteCandidate)
 
 module.exports = router
