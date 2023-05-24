@@ -1,4 +1,5 @@
 require('dotenv').config();
+const cloudinary = require('cloudinary').v2;
 // const modelUser = require('../models/user');
 const modelBanner = require('../models/banner')
 const jwt = require('jsonwebtoken');
@@ -22,6 +23,9 @@ async function createBanner(req, res) {
         res.json({ banner })
     }
     catch (err) {
+        if(req.file){
+            cloudinary.uploader.destroy(req.file.filename)
+        }
         res.status(402).json(errorMessage(["err in banner", err]))
     }
 }
@@ -32,6 +36,9 @@ async function updateBanner(req, res) {
         res.json({ banner })
     }
     catch (err) {
+        if(req.file){
+            cloudinary.uploader.destroy(req.file.filename)
+        }
         res.status(402).json(errorMessage(["err in banner", err]))
     }
 }

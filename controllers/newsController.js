@@ -1,5 +1,5 @@
 require('dotenv').config();
-// const modelUser = require('../models/user');
+const cloudinary = require('cloudinary').v2;
 const modelNews = require('../models/news')
 const jwt = require('jsonwebtoken');
 const errorMessage = require('../config').errorMessage
@@ -22,6 +22,9 @@ async function createNews(req, res) {
         res.json({ news })
     }
     catch (err) {
+        if (req.file) {
+            cloudinary.uploader.destroy(req.file.filename)
+        }
         res.status(402).json(errorMessage(["err in news", err]))
     }
 }
@@ -32,6 +35,9 @@ async function updateNews(req, res) {
         res.json({ news })
     }
     catch (err) {
+        if (req.file) {
+            cloudinary.uploader.destroy(req.file.filename)
+        }
         res.status(402).json(errorMessage(["err in news", err]))
     }
 }

@@ -1,9 +1,10 @@
 const News = require('../Entities/news.entities');
 const randtoken = require('rand-token');
+const cloudinary = require('cloudinary').v2;
 const { generateCodeByTime } = require('../hepper/genarate')
 const errorMessage = require('../config').errorMessage
-const fs = require('fs');
-const path = require('path');
+const {deleteImageFromCloud} = require('../hepper/deleteImageFromCloud')
+
 
 
 async function getAllNews(query) {
@@ -22,7 +23,7 @@ async function createNews(req) {
     const dataFields = req.body
     const newNews = new News({
         ...dataFields,
-        image: `${process.env.BASE_URL}${dataFile.path}`
+        image: dataFile?.path
     })
     const create = await newNews.save();
     return create;
@@ -35,19 +36,10 @@ async function updateNews(req) {
         const news = await News.findOne({ _id: dataFields._id });
         if (!news) throw new Error('News not found')
         if (dataFile) {
-            const folderPath = './images';
-            const fileName = news.image.split('/').at(-1);
-            const filePath = path.join(folderPath, fileName);
-            fs.unlink(filePath, (err) => {
-                if (err) {
-                    console.error('Error deleting file:', err);
-                } else {
-                    console.log('File deleted successfully.');
-                }
-            });
+            deleteImageFromCloud(news)
             news.set({
                 ...(dataFields || {}),
-                image: `${process.env.BASE_URL}${dataFile.path}`
+                image: dataFile?.path
             })
             const create = await news.save();
             return create;
@@ -66,16 +58,7 @@ async function updateNews(req) {
 async function deleteNews({ id }) {
     try {
         const news = await News.findOne({ _id: id });
-        const folderPath = './images';
-        const fileName = news.image.split('/').at(-1);
-        const filePath = path.join(folderPath, fileName);
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                console.error('Error deleting file:', err);
-            } else {
-                console.log('File deleted successfully.');
-            }
-        });
+        deleteImageFromCloud(news)
         await News.deleteOne({ _id: id })
         return { msg: "Xoá thành công" }
     } catch (error) {

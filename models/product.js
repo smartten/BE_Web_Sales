@@ -4,6 +4,7 @@ const { generateCodeByTime } = require('../hepper/genarate')
 const errorMessage = require('../config').errorMessage
 const fs = require('fs');
 const path = require('path');
+const {deleteImageFromCloud} = require('../hepper/deleteImageFromCloud')
 
 
 async function getAllProduct(query) {
@@ -21,7 +22,7 @@ async function createProduct(req) {
     const dataFiles = req.files
     const dataFields = req.body
     const mainImage = dataFiles?.mainImage.length > 0 ? dataFiles?.mainImage[0]?.path : ''
-    const subImages = dataFiles?.subImages.length > 0 ? dataFiles?.subImages.map(i => `${process.env.BASE_URL}${i?.path}`) : []
+    const subImages = dataFiles?.subImages.length > 0 ? dataFiles?.subImages.map(i => i.path) : []
 
     if (!mainImage || subImages.length == 0) {
         return { msg: 'Vui lòng nhập đủ ảnh' }
@@ -29,7 +30,7 @@ async function createProduct(req) {
     else {
         const newProduct = new Product({
             ...dataFields,
-            mainImage: `${process.env.BASE_URL}${mainImage}`,
+            mainImage,
             subImages
         })
         const create = await newProduct.save();
@@ -41,27 +42,16 @@ async function updateProduct(req) {
     try {
         const dataFiles = req.files
         const dataFields = req.body
-        const mainImage = dataFiles?.mainImage.length > 0 ? dataFiles?.mainImage[0]?.path : ''
-        const subImages = (dataFiles?.subImages && dataFiles?.subImages.length > 0) ? dataFiles?.subImages.map(i => `${process.env.BASE_URL}${i?.path}`) : []
+        const mainImage = (dataFiles?.mainImage && dataFiles?.mainImage.length > 0) ? dataFiles?.mainImage[0]?.path : ''
+        const subImages = (dataFiles?.subImages && dataFiles?.subImages.length > 0) ? dataFiles?.subImages.map(i => i?.path) : []
         const product = await Product.findOne({ _id: dataFields._id });
-        console.log([...product.subImages , ...subImages]);
-        
         if (!product) throw new Error('Product not found')
         if (dataFiles) {
             if (mainImage) {
-                const folderPath = './images';
-                const fileName = product.mainImage.split('/').at(-1);
-                const filePath = path.join(folderPath, fileName);
-                fs.unlink(filePath, (err) => {
-                    if (err) {
-                        console.error('Error deleting file:', err);
-                    } else {
-                        console.log('File deleted successfully.');
-                    }
-                });
+                deleteImageFromCloud({ image : product.mainImage})
                 product.set({
                     ...dataFields,
-                    mainImage: `${process.env.BASE_URL}${mainImage}`,
+                    mainImage,
                     subImages : [...product.subImages , ...subImages]
                 })
                 const create = await product.save();
@@ -92,27 +82,11 @@ async function deleteProduct({ id }) {
     try {
         const product = await Product.findOne({ _id: id });
 
-        const folderPath = './images';
-        const fileName = product.mainImage.split('/').at(-1);
-        const filePath = path.join(folderPath, fileName);
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                console.error('Error deleting file:', err);
-            } else {
-                console.log('File deleted successfully.');
-            }
-        });
+        deleteImageFromCloud({ image : product.mainImage})
+
         const fileSubImages = product.subImages
         for (let i = 0; i < fileSubImages.length; i++) {
-            const fileName = fileSubImages[i].split('/').at(-1);
-            const filePath = path.join(folderPath, fileName);
-            fs.unlink(filePath, (err) => {
-                if (err) {
-                    console.error('Error deleting file:', err);
-                } else {
-                    console.log('File deleted successfully.');
-                }
-            });
+            deleteImageFromCloud( { image : fileSubImages[i] } )
         }
         await product.deleteOne({ _id: id })
         return { msg: "Xoá thành công" }

@@ -2,8 +2,7 @@ const express = require('express')
 const _ = require('lodash');
 const Joi = require('joi');
 const multer = require('multer')
-const fs = require('fs');
-
+const uploadCloud = require('../hepper/cloudinary.config')
 
 const categoryController = require('../controllers/categoryController')
 const accountController = require('../controllers/accountController')
@@ -71,23 +70,23 @@ router.post('/order', orderController.createOrder)
 
 //banner
 router.get('/banner', bannerController.getAllBanner)
-router.post('/banner', upload.single('file'), bannerController.createBanner)
-router.patch('/banner', upload.single('file'), bannerController.updateBanner)
+router.post('/banner', uploadCloud.single('file'), bannerController.createBanner)
+router.patch('/banner', uploadCloud.single('file'), bannerController.updateBanner)
 router.delete('/banner/:id', bannerController.deleteBanner)
 
 //new
 router.get('/news', newsController.getAllNews)
-router.post('/news', upload.single('file'), newsController.createNews)
-router.patch('/news', upload.single('file'), newsController.updateNews)
+router.post('/news', uploadCloud.single('file'), newsController.createNews)
+router.patch('/news', uploadCloud.single('file'), newsController.updateNews)
 router.delete('/news/:id', newsController.deleteNews)
 
 //product
 router.get('/product', productController.getAllProduct)
-router.post('/product',upload.fields([
+router.post('/product',uploadCloud.fields([
     { name: 'mainImage', maxCount: 1 },
     { name: 'subImages', maxCount: 10 }
   ]) , productController.createProduct)
-router.patch('/product',upload.fields([
+router.patch('/product',uploadCloud.fields([
     { name: 'mainImage', maxCount: 1 },
     { name: 'subImages', maxCount: 10 }
   ]) , productController.updateProduct)

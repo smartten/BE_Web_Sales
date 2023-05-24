@@ -1,5 +1,5 @@
 require('dotenv').config();
-// const modelUser = require('../models/user');
+const cloudinary = require('cloudinary').v2;
 const modelProduct = require('../models/product')
 const jwt = require('jsonwebtoken');
 const errorMessage = require('../config').errorMessage
@@ -18,12 +18,20 @@ async function getAllProduct(req, res) {
 
 async function createProduct(req, res) {
     try {
-        console.log("aaa");
-        
         let product = await modelProduct.createProduct(req)
         res.json({ product })
     }
     catch (err) {
+        if (req.files) {
+            if (req.files?.mainImage) {
+                cloudinary.uploader.destroy(req.files?.mainImage[0]?.filename)
+            }
+            if (req.files?.subImages) {
+                for (let i = 0; i < req.files?.subImages.length; i++) {
+                    cloudinary.uploader.destroy(req.files?.subImages[i]?.filename)
+                }
+            }
+        }
         res.status(402).json(errorMessage(["err in product", err]))
     }
 }
@@ -34,6 +42,16 @@ async function updateProduct(req, res) {
         res.json({ product })
     }
     catch (err) {
+        if (req.files) {
+            if (req.files?.mainImage) {
+                cloudinary.uploader.destroy(req.files?.mainImage[0]?.filename)
+            }
+            if (req.files?.subImages) {
+                for (let i = 0; i < req.files?.subImages.length; i++) {
+                    cloudinary.uploader.destroy(req.files?.subImages[i]?.filename)
+                }
+            }
+        }
         res.status(402).json(errorMessage(["err in product", err]))
     }
 }
